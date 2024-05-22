@@ -13,7 +13,6 @@ import gg.rsmod.game.fs.def.ObjectDef
 import gg.rsmod.game.message.impl.LogoutFullMessage
 import gg.rsmod.game.message.impl.UpdateRebootTimerMessage
 import gg.rsmod.game.model.attr.AttributeMap
-import gg.rsmod.game.model.collision.CollisionManager
 import gg.rsmod.game.model.collision.ObjectType
 import gg.rsmod.game.model.collision.isClipped
 import gg.rsmod.game.model.combat.NpcCombatDef
@@ -24,6 +23,7 @@ import gg.rsmod.game.model.queue.QueueTask
 import gg.rsmod.game.model.queue.QueueTaskSet
 import gg.rsmod.game.model.queue.TaskPriority
 import gg.rsmod.game.model.queue.impl.WorldQueueTaskSet
+import gg.rsmod.game.model.region.Chunk
 import gg.rsmod.game.model.region.ChunkSet
 import gg.rsmod.game.model.shop.Shop
 import gg.rsmod.game.model.timer.TimerMap
@@ -676,6 +676,34 @@ class World(val gameContext: GameContext, val devContext: DevContext) {
      */
     internal fun bindServices(server: Server) {
         services.forEach { it.bindNet(server, this) }
+    }
+
+    /**
+     * Creates a new region within view distance of a tile. This region is then parsed and clipped for pathfinding.
+     */
+    fun allocateRegions(tile: Tile) {
+        allocateRegions(tile.x shr 3, tile.z shr 3)
+    }
+
+    /**
+     * Creates a new region within view distance of an existing chunk. This region is then parsed and clipped for pathfinding.
+     */
+    fun allocateRegions(chunkX: Int, chunkZ: Int) {
+        val lx = (chunkX - (Chunk.MAX_VIEWPORT shr 4)) shr 3
+        val rx = (chunkX + (Chunk.MAX_VIEWPORT shr 4)) shr 3
+        val lz = (chunkZ - (Chunk.MAX_VIEWPORT shr 4)) shr 3
+        val rz = (chunkZ + (Chunk.MAX_VIEWPORT shr 4)) shr 3
+
+        for (x in lx..rx) {
+            for (z in lz..rz) {
+                val region = z + (x shl 8)
+                this.definitions.createRegion(this, region)
+            }
+        }
+    }
+
+    fun allocateInstancedRegion(x: Int, z: Int, coordinates: IntArray) {
+        //TODO this method should be used to take the region data that is from the coordinates and then apply it to another coord [x/z]
     }
 
     companion object : KLogging() {

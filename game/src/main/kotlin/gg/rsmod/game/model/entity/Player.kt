@@ -647,6 +647,7 @@ abstract class Player(world: World) : Pawn(world) {
             val tiles = IntArray(gpiTileHashMultipliers.size).apply {
                 System.arraycopy(gpiTileHashMultipliers, 0, this, 0, size)
             }
+            world.allocateRegions(tile)
             write(RebuildLoginMessage(mapSize, if (forceMapRefresh) 1 else 0, index, tile, tiles, world.xteaKeyService))
         }
 

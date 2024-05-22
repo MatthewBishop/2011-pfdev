@@ -27,6 +27,10 @@ object PlayerPreSynchronizationTask : SynchronizationTask<Player> {
 
             val xteaService = pawn.world.xteaKeyService
             val instance = pawn.world.instanceAllocator.getMap(current)
+
+            if (instance != null) pawn.world.allocateInstancedRegion(current.x shr 3, current.z shr 3, instance.getCoordinates(pawn.tile))
+            else pawn.world.allocateRegions(current)
+
             val rebuildMessage = when {
                 instance != null -> RebuildRegionMessage(current.x shr 3, current.z shr 3, 1, instance.getCoordinates(pawn.tile), xteaService)
                 else -> RebuildNormalMessage(pawn.mapSize, if(pawn.forceMapRefresh) 1 else 0, current.x shr 3, current.z shr 3, xteaService)
